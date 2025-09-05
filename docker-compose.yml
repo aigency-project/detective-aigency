@@ -1,0 +1,101 @@
+services:
+  case-management-mcp-server:
+    build:
+      context: containers_base/container_base_mcp
+      dockerfile: Dockerfile    
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./mcp/mcp_case_management:/app/code
+    command: ["python", "/app/code/server.py"]
+    networks:
+      - detective_network
+
+  case-agent:
+    depends_on:
+      - case-management-mcp-server
+      - phoenix
+    build:
+      context: containers_base/container_base_agent
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8080"
+    volumes:
+      - ./agent/case_agent:/app/code/agent
+    env_file:
+      - ./.env
+    restart: unless-stopped
+    command: >
+      sh -c "watchmedo auto-restart --directory=/app/code/agent --patterns='*.py;*.yaml;*.yml' --recursive python /app/code/agent/__main__.py"
+    networks:
+      - detective_network
+
+  informant-management-mcp-server:
+    build:
+      context: containers_base/container_base_mcp
+      dockerfile: Dockerfile    
+    ports:
+      - "8083:8080"
+    volumes:
+      - ./mcp/mcp_informant_management:/app/code
+    command: ["python", "/app/code/server.py"]
+    networks:
+      - detective_network
+
+  informant-agent:
+    depends_on:
+      - informant-management-mcp-server
+      - phoenix
+    build:
+      context: containers_base/container_base_agent
+      dockerfile: Dockerfile
+    ports:
+      - "8084:8080"
+    volumes:
+      - ./agent/informant_agent:/app/code/agent
+    env_file:
+      - ./.env
+    restart: unless-stopped
+    command: >
+      sh -c "watchmedo auto-restart --directory=/app/code/agent --patterns='*.py;*.yaml;*.yml' --recursive python /app/code/agent/__main__.py"
+    networks:
+      - detective_network  
+
+  detective-manager-agent:
+    depends_on:
+      - case-agent
+      - informant-agent
+      - phoenix
+    build:
+      context: containers_base/container_base_agent
+      dockerfile: Dockerfile
+    ports:
+      - "8085:8080"
+    volumes:
+      - ./agent/detective_manager_agent:/app/code/agent
+    env_file:
+      - ./.env
+    restart: unless-stopped
+    command: >
+      bash -c "sleep 5 && watchmedo auto-restart --directory=/app/code/agent --patterns='*.py;*.yaml;*.yml' --recursive python /app/code/agent/__main__.py"
+    networks:
+      - detective_network
+
+  phoenix:
+    image: arizephoenix/phoenix:latest
+    ports:
+      - "6006:6006"
+    networks:
+      - detective_network
+
+  ## Build from here https://github.com/a2aproject/a2a-inspector.git
+  a2ainspector:
+    image: a2a-inspector
+    ports:
+      - "6007:8080"
+    networks:
+      - detective_network
+
+networks:
+  detective_network:
+    driver: bridge

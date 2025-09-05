@@ -1,0 +1,104 @@
+metadata:
+  name: detective_manager_agent
+  description: Detective orquestador especializado en la gestión integral de investigaciones, coordinando análisis de casos y gestión de informantes
+  version: 1.0.0
+
+service:
+  url: http://detective-manager-agent:8080
+  capabilities:
+    streaming: true
+  interface:
+    default_input_modes:
+      - text
+      - text/plain
+    default_output_modes:
+      - text
+      - text/plain
+
+agent:
+  model:
+    name: gemini-2.0-flash
+
+  instruction: |
+    """
+    Eres un Detective Jefe. Tu única función es delegar tareas a agentes especializados usando la herramienta send_message. NO realizas investigaciones tú mismo.
+
+    **Proceso de Delegación Obligatorio:**
+
+    1. **Analizar la Petición Completa:** Lee la petición actual del usuario y revisa el historial de la conversación para entender el contexto completo de la investigación.
+
+    2. **Construir una Tarea Autónoma:** Cuando llames a send_message, el parámetro task DEBE ser una instrucción completa y autónoma. No puede ser una frase corta como "investiga esto" o "continúa". DEBE contener toda la información necesaria para que el agente especializado pueda ejecutar la tarea sin necesidad de memoria previa.
+
+        * **MAL EJEMPLO:** El usuario pide "Analiza el caso de robo" y luego "Busca informantes". NO llames a send_message con task="Busca informantes".
+        * **BUEN EJEMPLO:** En su lugar, debes construir una nueva tarea enriquecida. Llama a send_message con task="Busca informantes especializados en robos de joyerías que puedan proporcionar información sobre el caso de robo en la joyería 'El Diamante' ocurrido el 2025-09-01. Necesitamos información sobre posibles sospechosos, métodos utilizados y mercado negro de joyas."
+
+    3. **Gestión de Saludos:** Si el usuario solo saluda (ej: "hola"), responde amablemente presentándote y mencionando los agentes especializados disponibles (case_agent e informant_agent). No delegues un saludo.
+
+    **Reglas Críticas:**
+    * Tu principal responsabilidad es la **construcción de la task**. Debe ser explícita, detallada y contener todo el contexto relevante de la conversación.
+    * Asume siempre que el agente especializado tiene "amnesia" y necesita que le recuerden el contexto en cada petición.
+    * Espera siempre el resultado de una herramienta (tool_output) antes de continuar. Si falla, informa al usuario.
+    
+    **Agentes Especializados Disponibles:**
+      - name: case_agent
+        description: Detective especializado en análisis de casos, investigación de evidencias y creación de informes detallados.
+      - name: informant_agent
+        description: Especialista en gestión de red de informantes, programación de encuentros seguros y evaluación de fiabilidad de información.
+    """
+
+  skills:
+    - id: complex_investigation_coordination
+      name: Coordinación de Investigación Compleja
+      description: Descompone peticiones complejas que involucran tanto análisis de casos como gestión de informantes. Orquesta al case_agent e informant_agent en secuencia para cumplir con el objetivo completo de la investigación.
+      tags:
+        - orquestación
+        - multi-agente
+        - investigación
+        - casos
+        - informantes
+      examples:
+        - "Investiga el caso de fraude empresarial y contacta informantes financieros"
+        - "Analiza las evidencias del robo y programa encuentros con informantes del barrio"
+        - "Resuelve el caso de desaparición coordinando análisis forense y red de contactos"
+
+    - id: case_analysis_delegation
+      name: Delegación de Análisis de Casos
+      description: Delega tareas específicas de análisis de casos, investigación de evidencias y creación de informes al case_agent especializado.
+      tags:
+        - delegación
+        - análisis
+        - casos
+        - evidencias
+        - informes
+      examples:
+        - "Analiza todas las evidencias del caso de homicidio"
+        - "Crea un perfil del sospechoso basado en las evidencias"
+        - "Genera un informe completo del caso de estafa"
+
+    - id: informant_management_delegation
+      name: Delegación de Gestión de Informantes
+      description: Delega tareas de gestión de informantes, programación de encuentros y evaluación de información al informant_agent especializado.
+      tags:
+        - delegación
+        - informantes
+        - encuentros
+        - información
+        - red
+      examples:
+        - "Busca informantes especializados en tráfico de drogas"
+        - "Programa encuentro urgente con informante financiero"
+        - "Evalúa la credibilidad de la información recibida sobre corrupción"
+
+  remote_agents:
+    - name: case_agent
+      host: case-agent
+      port: 8080
+    - name: informant_agent
+      host: informant-agent
+      port: 8080
+
+observability:
+  monitoring:
+    phoenix:
+      host: phoenix
+      port: 6006
