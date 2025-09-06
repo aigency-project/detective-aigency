@@ -1,4 +1,5 @@
 # server.py
+import logging
 from mcp.server.fastmcp import FastMCP
 from mcp.types import PromptMessage, TextContent
 from typing import List, Dict, Any, Optional, Union
@@ -11,6 +12,8 @@ SERVER_HOST = "0.0.0.0"
 SERVER_PORT = 8080
 SERVER_PATH = "/mcp"
 
+logger = logging.getLogger(__name__)
+
 mcp = FastMCP(
     name="Informant Management MCP",
     port=SERVER_PORT,
@@ -18,17 +21,17 @@ mcp = FastMCP(
     log_level="DEBUG",
 )
 
-print("Informant Management FastMCP server object created.")
+logger.info("Informant Management FastMCP server object created")
 
-# Base de datos en memoria para informantes
+# In-memory database for informants
 INFORMANTS_DB = {}
 MEETINGS_DB = {}
 INFORMATION_DB = {}
 
-# Horarios de encuentro disponibles
+# Available meeting times
 MEETING_TIMES = ["08:00", "10:00", "12:00", "14:00", "16:00", "18:00", "20:00", "22:00"]
 
-# Ubicaciones seguras para encuentros
+# Safe locations for meetings
 SAFE_LOCATIONS = [
     "Café Central - Mesa del fondo",
     "Parque Municipal - Banco junto al lago",
@@ -39,17 +42,17 @@ SAFE_LOCATIONS = [
     "Museo de Arte - Sala Medieval",
 ]
 
-# Datos de ejemplo
+# Sample data
 SAMPLE_INFORMANTS = [
     {
         "id": "INF-001",
         "code_name": "Cuervo",
-        "specialty": "tráfico_drogas",
-        "reliability_level": "alto",
-        "contact_method": "teléfono_seguro",
+        "specialty": "drug_trafficking",
+        "reliability_level": "high",
+        "contact_method": "secure_phone",
         "date_registered": "2025-01-15",
         "handler": "Detective García",
-        "status": "activo",
+        "status": "active",
         "location_area": "centro_ciudad",
         "information_count": 12,
         "successful_tips": 9,
@@ -57,12 +60,12 @@ SAMPLE_INFORMANTS = [
     {
         "id": "INF-002",
         "code_name": "Sombra",
-        "specialty": "fraude_financiero",
-        "reliability_level": "medio",
-        "contact_method": "email_encriptado",
+        "specialty": "financial_fraud",
+        "reliability_level": "medium",
+        "contact_method": "encrypted_email",
         "date_registered": "2025-02-20",
         "handler": "Detective Martínez",
-        "status": "activo",
+        "status": "active",
         "location_area": "distrito_financiero",
         "information_count": 8,
         "successful_tips": 5,
@@ -70,12 +73,12 @@ SAMPLE_INFORMANTS = [
     {
         "id": "INF-003",
         "code_name": "Fantasma",
-        "specialty": "robos_joyerías",
-        "reliability_level": "alto",
-        "contact_method": "contacto_presencial",
+        "specialty": "jewelry_theft",
+        "reliability_level": "high",
+        "contact_method": "in_person_contact",
         "date_registered": "2024-11-10",
         "handler": "Detective Ruiz",
-        "status": "activo",
+        "status": "active",
         "location_area": "centro_comercial",
         "information_count": 15,
         "successful_tips": 13,
@@ -83,12 +86,12 @@ SAMPLE_INFORMANTS = [
     {
         "id": "INF-004",
         "code_name": "Eco",
-        "specialty": "desapariciones",
-        "reliability_level": "bajo",
-        "contact_method": "teléfono_seguro",
+        "specialty": "disappearances",
+        "reliability_level": "low",
+        "contact_method": "secure_phone",
         "date_registered": "2025-03-01",
         "handler": "Detective López",
-        "status": "inactivo",
+        "status": "inactive",
         "location_area": "suburbios",
         "information_count": 3,
         "successful_tips": 1,
@@ -103,10 +106,10 @@ SAMPLE_MEETINGS = [
         "date": "2025-09-05",
         "time": "18:00",
         "location": "Café Central - Mesa del fondo",
-        "purpose": "Información sobre red de distribución",
-        "status": "programado",
+        "purpose": "Information about distribution network",
+        "status": "scheduled",
         "handler": "Detective García",
-        "security_level": "alto",
+        "security_level": "high",
     },
     {
         "id": "MEET-002",
@@ -115,10 +118,22 @@ SAMPLE_MEETINGS = [
         "date": "2025-09-04",
         "time": "14:00",
         "location": "Biblioteca Pública - Sala de lectura",
-        "purpose": "Seguimiento caso TechCorp",
-        "status": "completado",
+        "purpose": "TechCorp case follow-up",
+        "status": "completed",
         "handler": "Detective Martínez",
-        "security_level": "medio",
+        "security_level": "medium",
+    },
+    {
+        "id": "MEET-003",
+        "informant_id": "INF-003",
+        "informant_code_name": "Fantasma",
+        "date": "2025-09-03",
+        "time": "10:00",
+        "location": "Café Central - Mesa del fondo",
+        "purpose": "Information about jewelry",
+        "status": "scheduled",
+        "handler": "Detective Ruiz",
+        "security_level": "high",
     },
 ]
 
@@ -127,9 +142,9 @@ SAMPLE_INFORMATION = [
         "id": "INFO-001",
         "informant_id": "INF-001",
         "informant_code_name": "Cuervo",
-        "information_type": "ubicación_sospechoso",
-        "content": "Sospechoso del robo joyería visto en barrio industrial",
-        "credibility": "alta",
+        "information_type": "suspect_location",
+        "content": "Jewelry robbery suspect seen in industrial district",
+        "credibility": "high",
         "date_received": "2025-09-03",
         "case_related": "CASE-001",
         "verification_status": "pendiente",
@@ -139,19 +154,19 @@ SAMPLE_INFORMATION = [
         "id": "INFO-002",
         "informant_id": "INF-002",
         "informant_code_name": "Sombra",
-        "information_type": "transacciones_sospechosas",
-        "content": "Movimientos bancarios anómalos en cuentas TechCorp detectados",
-        "credibility": "media",
+        "information_type": "suspicious_transactions",
+        "content": "Anomalous bank movements detected in TechCorp accounts",
+        "credibility": "medium",
         "date_received": "2025-09-01",
         "case_related": "CASE-002",
-        "verification_status": "verificado",
+        "verification_status": "verified",
         "handler": "Detective Martínez",
     },
 ]
 
 
 def initialize_data():
-    """Inicializa la base de datos con datos de ejemplo"""
+    """Initialize the database with sample data"""
     for informant in SAMPLE_INFORMANTS:
         INFORMANTS_DB[informant["id"]] = informant
 
@@ -170,48 +185,48 @@ def register_new_informant(
     code_name: str, specialty: str, reliability_level: str, contact_method: str
 ) -> Dict[str, Any]:
     """
-    Registra un nuevo informante en el sistema.
-    Especialidades: tráfico_drogas, fraude_financiero, robos_joyerías, desapariciones, corrupción, cibercriminalidad
-    Niveles de confianza: bajo, medio, alto
-    Métodos de contacto: teléfono_seguro, email_encriptado, contacto_presencial
+    Registers a new informant in the system.
+    Specialties: drug_trafficking, financial_fraud, jewelry_theft, disappearances, corruption, cybercrime
+    Reliability levels: low, medium, high
+    Contact methods: secure_phone, encrypted_email, in_person_contact
     """
-    print(f"Tool call: register_new_informant - {code_name}, specialty: {specialty}")
+    logger.info(f"Tool call: register_new_informant - {code_name}, specialty: {specialty}")
 
     valid_specialties = [
-        "tráfico_drogas",
-        "fraude_financiero",
-        "robos_joyerías",
-        "desapariciones",
-        "corrupción",
-        "cibercriminalidad",
+        "drug_trafficking",
+        "financial_fraud",
+        "jewelry_theft",
+        "disappearances",
+        "corruption",
+        "cybercrime",
     ]
-    valid_reliability = ["bajo", "medio", "alto"]
+    valid_reliability = ["low", "medium", "high"]
     valid_contact_methods = [
-        "teléfono_seguro",
-        "email_encriptado",
-        "contacto_presencial",
+        "secure_phone",
+        "encrypted_email",
+        "in_person_contact",
     ]
 
     if specialty not in valid_specialties:
         return {
-            "error": f"Especialidad '{specialty}' no válida. Especialidades válidas: {', '.join(valid_specialties)}"
+            "error": f"Specialty '{specialty}' not valid. Valid specialties: {', '.join(valid_specialties)}"
         }
 
     if reliability_level not in valid_reliability:
         return {
-            "error": f"Nivel de confianza '{reliability_level}' no válido. Niveles válidos: {', '.join(valid_reliability)}"
+            "error": f"Reliability level '{reliability_level}' not valid. Valid levels: {', '.join(valid_reliability)}"
         }
 
     if contact_method not in valid_contact_methods:
         return {
-            "error": f"Método de contacto '{contact_method}' no válido. Métodos válidos: {', '.join(valid_contact_methods)}"
+            "error": f"Contact method '{contact_method}' not valid. Valid methods: {', '.join(valid_contact_methods)}"
         }
 
-    # Verificar que el nombre clave no exista
+    # Verify that the code name doesn't exist
     for informant in INFORMANTS_DB.values():
         if informant["code_name"].lower() == code_name.lower():
             return {
-                "error": f"Ya existe un informante con el nombre clave '{code_name}'"
+                "error": f"An informant with code name '{code_name}' already exists"
             }
 
     informant_id = f"INF-{str(uuid.uuid4().hex[:3]).upper()}"
@@ -222,9 +237,9 @@ def register_new_informant(
         "reliability_level": reliability_level,
         "contact_method": contact_method,
         "date_registered": datetime.datetime.now().strftime("%Y-%m-%d"),
-        "handler": "Sistema Automático",
-        "status": "activo",
-        "location_area": "por_determinar",
+        "handler": "Automatic System",
+        "status": "active",
+        "location_area": "to_be_determined",
         "information_count": 0,
         "successful_tips": 0,
     }
@@ -233,7 +248,7 @@ def register_new_informant(
 
     return {
         "status": "success",
-        "message": f"Informante '{code_name}' registrado exitosamente",
+        "message": f"Informant '{code_name}' registered successfully",
         "informant": new_informant,
     }
 
@@ -243,36 +258,36 @@ def schedule_informant_meeting(
     informant_id: str, date: str, time: str, location: str, purpose: str
 ) -> Dict[str, Any]:
     """
-    Programa un encuentro con un informante.
-    Formato fecha: YYYY-MM-DD
-    Horarios disponibles: 08:00, 10:00, 12:00, 14:00, 16:00, 18:00, 20:00, 22:00
+    Schedules a meeting with an informant.
+    Date format: YYYY-MM-DD
+    Available times: 08:00, 10:00, 12:00, 14:00, 16:00, 18:00, 20:00, 22:00
     """
-    print(
+    logger.info(
         f"Tool call: schedule_informant_meeting for {informant_id} on {date} at {time}"
     )
 
     if informant_id not in INFORMANTS_DB:
-        return {"error": f"Informante con ID '{informant_id}' no encontrado"}
+        return {"error": f"Informant with ID '{informant_id}' not found"}
 
-    # Validar formato de fecha
+    # Validate date format
     try:
         datetime.datetime.strptime(date, "%Y-%m-%d")
     except ValueError:
-        return {"error": f"Formato de fecha '{date}' incorrecto. Usa YYYY-MM-DD"}
+        return {"error": f"Date format '{date}' incorrect. Use YYYY-MM-DD"}
 
     if time not in MEETING_TIMES:
         return {
-            "error": f"Horario '{time}' no disponible. Horarios válidos: {', '.join(MEETING_TIMES)}"
+            "error": f"Time '{time}' not available. Valid times: {', '.join(MEETING_TIMES)}"
         }
 
-    # Verificar disponibilidad (no dos encuentros al mismo tiempo)
+    # Check availability (no two meetings at the same time)
     for meeting in MEETINGS_DB.values():
         if (
             meeting["date"] == date
             and meeting["time"] == time
-            and meeting["status"] == "programado"
+            and meeting["status"] == "scheduled"
         ):
-            return {"error": f"Ya hay un encuentro programado para {date} a las {time}"}
+            return {"error": f"There is already a meeting scheduled for {date} at {time}"}
 
     informant = INFORMANTS_DB[informant_id]
     meeting_id = f"MEET-{str(uuid.uuid4().hex[:3]).upper()}"
@@ -285,9 +300,9 @@ def schedule_informant_meeting(
         "time": time,
         "location": location,
         "purpose": purpose,
-        "status": "programado",
+        "status": "scheduled",
         "handler": informant["handler"],
-        "security_level": "medio",
+        "security_level": "medium",
         "created_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
     }
 
@@ -295,43 +310,43 @@ def schedule_informant_meeting(
 
     return {
         "status": "success",
-        "message": f"Encuentro programado con '{informant['code_name']}'",
+        "message": f"Meeting scheduled with '{informant['code_name']}'",
         "meeting": new_meeting,
-        "security_instructions": f"Código de encuentro: {meeting_id}. Ubicación: {location}. Mantener protocolo de seguridad nivel {new_meeting['security_level']}.",
+        "security_instructions": f"Meeting code: {meeting_id}. Location: {location}. Maintain security protocol level {new_meeting['security_level']}.",
     }
 
 
 @mcp.tool()
 def check_meeting_availability(date: str, time: str, location: str) -> Dict[str, Any]:
     """
-    Verifica disponibilidad para programar un encuentro en fecha, hora y ubicación específicas.
+    Checks availability to schedule a meeting on specific date, time and location.
     """
-    print(f"Tool call: check_meeting_availability for {date} at {time} in {location}")
+    logger.info(f"Tool call: check_meeting_availability for {date} at {time} in {location}")
 
-    # Validar formato de fecha
+    # Validate date format
     try:
         datetime.datetime.strptime(date, "%Y-%m-%d")
     except ValueError:
-        return {"error": f"Formato de fecha '{date}' incorrecto. Usa YYYY-MM-DD"}
+        return {"error": f"Date format '{date}' incorrect. Use YYYY-MM-DD"}
 
     if time not in MEETING_TIMES:
         return {
-            "error": f"Horario '{time}' no disponible. Horarios válidos: {', '.join(MEETING_TIMES)}"
+            "error": f"Time '{time}' not available. Valid times: {', '.join(MEETING_TIMES)}"
         }
 
-    # Verificar conflictos
+    # Check conflicts
     conflicts = []
     for meeting in MEETINGS_DB.values():
-        if meeting["status"] == "programado":
+        if meeting["status"] == "scheduled":
             if meeting["date"] == date and meeting["time"] == time:
                 conflicts.append(
-                    f"Encuentro con {meeting['informant_code_name']} ya programado"
+                    f"Meeting with {meeting['informant_code_name']} already scheduled"
                 )
             if meeting["date"] == date and meeting["location"] == location:
                 time_diff = abs(int(meeting["time"][:2]) - int(time[:2]))
-                if time_diff < 2:  # Menos de 2 horas de diferencia
+                if time_diff < 2:  # Less than 2 hours difference
                     conflicts.append(
-                        f"Ubicación ocupada cerca del horario por {meeting['informant_code_name']}"
+                        f"Location occupied near the time by {meeting['informant_code_name']}"
                     )
 
     if conflicts:
@@ -346,17 +361,17 @@ def check_meeting_availability(date: str, time: str, location: str) -> Dict[str,
 
     return {
         "status": "available",
-        "message": f"Disponible para encuentro el {date} a las {time} en {location}",
-        "security_recommendations": f"Ubicación segura confirmada. Nivel de seguridad recomendado: medio.",
+        "message": f"Available for meeting on {date} at {time} in {location}",
+        "security_recommendations": f"Safe location confirmed. Recommended security level: medium.",
     }
 
 
 @mcp.tool()
 def find_informants_by_specialty(specialty: str) -> List[Dict[str, Any]]:
     """
-    Busca informantes por área de especialización.
+    Search informants by area of specialization.
     """
-    print(f"Tool call: find_informants_by_specialty for {specialty}")
+    logger.info(f"Tool call: find_informants_by_specialty for {specialty}")
 
     matching_informants = []
     for informant in INFORMANTS_DB.values():
@@ -377,7 +392,7 @@ def find_informants_by_specialty(specialty: str) -> List[Dict[str, Any]]:
         matching_informants
         if matching_informants
         else {
-            "message": f"No se encontraron informantes especializados en '{specialty}'"
+            "message": f"No informants specialized in '{specialty}' were found"
         }
     )
 
@@ -385,21 +400,21 @@ def find_informants_by_specialty(specialty: str) -> List[Dict[str, Any]]:
 @mcp.tool()
 def get_informant_profile(informant_id: str) -> Dict[str, Any]:
     """
-    Obtiene el perfil completo de un informante específico.
+    Gets the complete profile of a specific informant.
     """
-    print(f"Tool call: get_informant_profile for {informant_id}")
+    logger.info(f"Tool call: get_informant_profile for {informant_id}")
 
     if informant_id not in INFORMANTS_DB:
-        return {"error": f"Informante con ID '{informant_id}' no encontrado"}
+        return {"error": f"Informant with ID '{informant_id}' not found"}
 
     informant = INFORMANTS_DB[informant_id].copy()
 
-    # Agregar estadísticas adicionales
+    # Add additional statistics
     informant["success_rate"] = (
         f"{(informant['successful_tips'] / max(informant['information_count'], 1)) * 100:.1f}%"
     )
 
-    # Agregar encuentros recientes
+    # Add recent meetings
     recent_meetings = []
     for meeting in MEETINGS_DB.values():
         if meeting["informant_id"] == informant_id:
@@ -415,22 +430,22 @@ def get_informant_profile(informant_id: str) -> Dict[str, Any]:
 @mcp.tool()
 def get_informants_by_reliability(reliability_level: str) -> List[Dict[str, Any]]:
     """
-    Lista informantes filtrados por nivel de confiabilidad.
-    Niveles: bajo, medio, alto
+    Lists informants filtered by reliability level.
+    Levels: low, medium, high
     """
-    print(f"Tool call: get_informants_by_reliability for level {reliability_level}")
+    logger.info(f"Tool call: get_informants_by_reliability for level {reliability_level}")
 
-    valid_levels = ["bajo", "medio", "alto"]
+    valid_levels = ["low", "medium", "high"]
     if reliability_level not in valid_levels:
         return {
-            "error": f"Nivel de confiabilidad '{reliability_level}' no válido. Niveles válidos: {', '.join(valid_levels)}"
+            "error": f"Reliability level '{reliability_level}' not valid. Valid levels: {', '.join(valid_levels)}"
         }
 
     matching_informants = []
     for informant in INFORMANTS_DB.values():
         if (
             informant["reliability_level"] == reliability_level
-            and informant["status"] == "activo"
+            and informant["status"] == "active"
         ):
             matching_informants.append(
                 {
@@ -447,7 +462,7 @@ def get_informants_by_reliability(reliability_level: str) -> List[Dict[str, Any]
         matching_informants
         if matching_informants
         else {
-            "message": f"No se encontraron informantes activos con confiabilidad '{reliability_level}'"
+            "message": f"No active informants found with reliability '{reliability_level}'"
         }
     )
 
@@ -457,31 +472,31 @@ def record_information_received(
     informant_id: str, information_type: str, content: str, credibility: str
 ) -> Dict[str, Any]:
     """
-    Registra información recibida de un informante.
-    Tipos: ubicación_sospechoso, transacciones_sospechosas, actividad_criminal, testimonio_testigo
-    Credibilidad: baja, media, alta
+    Records information received from an informant.
+    Types: suspect_location, suspicious_transactions, criminal_activity, witness_testimony
+    Credibility: low, medium, high
     """
-    print(f"Tool call: record_information_received from {informant_id}")
+    logger.info(f"Tool call: record_information_received from {informant_id}")
 
     if informant_id not in INFORMANTS_DB:
-        return {"error": f"Informante con ID '{informant_id}' no encontrado"}
+        return {"error": f"Informant with ID '{informant_id}' not found"}
 
     valid_types = [
-        "ubicación_sospechoso",
-        "transacciones_sospechosas",
-        "actividad_criminal",
-        "testimonio_testigo",
+        "suspect_location",
+        "suspicious_transactions",
+        "criminal_activity",
+        "witness_testimony",
     ]
-    valid_credibility = ["baja", "media", "alta"]
+    valid_credibility = ["low", "medium", "high"]
 
     if information_type not in valid_types:
         return {
-            "error": f"Tipo de información '{information_type}' no válido. Tipos válidos: {', '.join(valid_types)}"
+            "error": f"Information type '{information_type}' not valid. Valid types: {', '.join(valid_types)}"
         }
 
     if credibility not in valid_credibility:
         return {
-            "error": f"Nivel de credibilidad '{credibility}' no válido. Niveles válidos: {', '.join(valid_credibility)}"
+            "error": f"Credibility level '{credibility}' not valid. Valid levels: {', '.join(valid_credibility)}"
         }
 
     informant = INFORMANTS_DB[informant_id]
@@ -495,19 +510,19 @@ def record_information_received(
         "content": content,
         "credibility": credibility,
         "date_received": datetime.datetime.now().strftime("%Y-%m-%d"),
-        "case_related": "por_determinar",
-        "verification_status": "pendiente",
+        "case_related": "to_be_determined",
+        "verification_status": "pending",
         "handler": informant["handler"],
     }
 
     INFORMATION_DB[info_id] = new_information
 
-    # Actualizar contador del informante
+    # Update informant counter
     INFORMANTS_DB[informant_id]["information_count"] += 1
 
     return {
         "status": "success",
-        "message": f"Información registrada de '{informant['code_name']}'",
+        "message": f"Information recorded from '{informant['code_name']}'",
         "information": new_information,
     }
 
@@ -517,43 +532,43 @@ def assess_information_credibility(
     information_id: str, verification_method: str
 ) -> Dict[str, Any]:
     """
-    Evalúa la credibilidad de información recibida.
-    Métodos de verificación: cruzar_fuentes, verificación_física, análisis_técnico
+    Evaluates the credibility of received information.
+    Verification methods: cross_sources, physical_verification, technical_analysis
     """
-    print(f"Tool call: assess_information_credibility for {information_id}")
+    logger.info(f"Tool call: assess_information_credibility for {information_id}")
 
     if information_id not in INFORMATION_DB:
-        return {"error": f"Información con ID '{information_id}' no encontrada"}
+        return {"error": f"Information with ID '{information_id}' not found"}
 
-    valid_methods = ["cruzar_fuentes", "verificación_física", "análisis_técnico"]
+    valid_methods = ["cross_sources", "physical_verification", "technical_analysis"]
     if verification_method not in valid_methods:
         return {
-            "error": f"Método de verificación '{verification_method}' no válido. Métodos válidos: {', '.join(valid_methods)}"
+            "error": f"Verification method '{verification_method}' not valid. Valid methods: {', '.join(valid_methods)}"
         }
 
     information = INFORMATION_DB[information_id]
 
-    # Simular evaluación de credibilidad
+    # Simulate credibility evaluation
     assessment = {
         "information_id": information_id,
         "verification_method": verification_method,
         "date_assessed": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
-        "assessor": "Sistema de Verificación",
+        "assessor": "Verification System",
         "original_credibility": information["credibility"],
     }
 
-    # Lógica de evaluación simplificada
-    if verification_method == "cruzar_fuentes":
-        assessment["verification_result"] = "confirmado_parcialmente"
+    # Simplified evaluation logic
+    if verification_method == "cross_sources":
+        assessment["verification_result"] = "partially_confirmed"
         assessment["confidence_level"] = "75%"
-    elif verification_method == "verificación_física":
-        assessment["verification_result"] = "confirmado"
+    elif verification_method == "physical_verification":
+        assessment["verification_result"] = "confirmed"
         assessment["confidence_level"] = "90%"
-    elif verification_method == "análisis_técnico":
-        assessment["verification_result"] = "pendiente_análisis_adicional"
+    elif verification_method == "technical_analysis":
+        assessment["verification_result"] = "pending_additional_analysis"
         assessment["confidence_level"] = "60%"
 
-    # Actualizar información
+    # Update information
     INFORMATION_DB[information_id]["verification_status"] = assessment[
         "verification_result"
     ]
@@ -567,18 +582,18 @@ def update_informant_reliability(
     informant_id: str, new_level: str, reason: str
 ) -> Dict[str, Any]:
     """
-    Actualiza el nivel de confiabilidad de un informante.
-    Niveles: bajo, medio, alto
+    Updates the reliability level of an informant.
+    Levels: low, medium, high
     """
-    print(f"Tool call: update_informant_reliability for {informant_id} to {new_level}")
+    logger.info(f"Tool call: update_informant_reliability for {informant_id} to {new_level}")
 
     if informant_id not in INFORMANTS_DB:
-        return {"error": f"Informante con ID '{informant_id}' no encontrado"}
+        return {"error": f"Informant with ID '{informant_id}' not found"}
 
-    valid_levels = ["bajo", "medio", "alto"]
+    valid_levels = ["low", "medium", "high"]
     if new_level not in valid_levels:
         return {
-            "error": f"Nivel de confiabilidad '{new_level}' no válido. Niveles válidos: {', '.join(valid_levels)}"
+            "error": f"Reliability level '{new_level}' not valid. Valid levels: {', '.join(valid_levels)}"
         }
 
     informant = INFORMANTS_DB[informant_id]
@@ -589,7 +604,7 @@ def update_informant_reliability(
         "%Y-%m-%d %H:%M"
     )
 
-    # Agregar al historial
+    # Add to history
     if "reliability_history" not in INFORMANTS_DB[informant_id]:
         INFORMANTS_DB[informant_id]["reliability_history"] = []
 
@@ -604,7 +619,7 @@ def update_informant_reliability(
 
     return {
         "status": "success",
-        "message": f"Confiabilidad de '{informant['code_name']}' actualizada de '{old_level}' a '{new_level}'",
+        "message": f"Reliability of '{informant['code_name']}' updated from '{old_level}' to '{new_level}'",
         "informant_id": informant_id,
         "code_name": informant["code_name"],
         "new_reliability": new_level,
@@ -615,22 +630,22 @@ def update_informant_reliability(
 @mcp.tool()
 def get_informant_history(informant_id: str) -> Dict[str, Any]:
     """
-    Obtiene el historial completo de un informante incluyendo información proporcionada y encuentros.
+    Gets the complete history of an informant including provided information and meetings.
     """
-    print(f"Tool call: get_informant_history for {informant_id}")
+    logger.info(f"Tool call: get_informant_history for {informant_id}")
 
     if informant_id not in INFORMANTS_DB:
-        return {"error": f"Informante con ID '{informant_id}' no encontrado"}
+        return {"error": f"Informant with ID '{informant_id}' not found"}
 
     informant = INFORMANTS_DB[informant_id]
 
-    # Recopilar información proporcionada
+    # Collect provided information
     information_history = []
     for info in INFORMATION_DB.values():
         if info["informant_id"] == informant_id:
             information_history.append(info)
 
-    # Recopilar encuentros
+    # Collect meetings
     meeting_history = []
     for meeting in MEETINGS_DB.values():
         if meeting["informant_id"] == informant_id:
@@ -652,22 +667,22 @@ def get_informant_history(informant_id: str) -> Dict[str, Any]:
 @mcp.tool()
 def get_network_statistics() -> Dict[str, Any]:
     """
-    Proporciona estadísticas generales sobre la red de informantes.
+    Provides general statistics about the informant network.
     """
-    print("Tool call: get_network_statistics")
+    logger.info("Tool call: get_network_statistics")
 
     total_informants = len(INFORMANTS_DB)
     active_informants = len(
         [i for i in INFORMANTS_DB.values() if i["status"] == "activo"]
     )
 
-    # Estadísticas por confiabilidad
-    reliability_stats = {"bajo": 0, "medio": 0, "alto": 0}
+    # Statistics by reliability
+    reliability_stats = {"low": 0, "medium": 0, "high": 0}
     for informant in INFORMANTS_DB.values():
         if informant["status"] == "activo":
             reliability_stats[informant["reliability_level"]] += 1
 
-    # Estadísticas por especialidad
+    # Statistics by specialty
     specialty_stats = {}
     for informant in INFORMANTS_DB.values():
         if informant["status"] == "activo":
@@ -698,13 +713,13 @@ def get_network_statistics() -> Dict[str, Any]:
 @mcp.tool()
 def get_active_informants_count() -> Dict[str, Any]:
     """
-    Devuelve el número de informantes activos en el sistema.
+    Returns the number of active informants in the system.
     """
-    print("Tool call: get_active_informants_count")
+    logger.info("Tool call: get_active_informants_count")
 
-    active_count = len([i for i in INFORMANTS_DB.values() if i["status"] == "activo"])
+    active_count = len([i for i in INFORMANTS_DB.values() if i["status"] == "active"])
     inactive_count = len(
-        [i for i in INFORMANTS_DB.values() if i["status"] == "inactivo"]
+        [i for i in INFORMANTS_DB.values() if i["status"] == "inactive"]
     )
 
     return {
@@ -715,14 +730,14 @@ def get_active_informants_count() -> Dict[str, Any]:
     }
 
 
-# --- SECCIÓN PARA INICIAR EL SERVIDOR ---
+# --- SERVER STARTUP SECTION ---
 if __name__ == "__main__":
-    print(
+    logger.info(
         f"Attempting to start Informant Management FastMCP server on {SERVER_HOST}:{SERVER_PORT}{SERVER_PATH} with streamable-http transport"
     )
     try:
         mcp.run(transport="streamable-http")
     except KeyboardInterrupt:
-        print("\nServer stopped by user.")
+        logger.info("Server stopped by user")
     except Exception as e:
-        print(f"An error occurred while starting the server: {e}")
+        logger.error(f"An error occurred while starting the server: {e}")

@@ -1,4 +1,5 @@
 # server.py
+import logging
 from mcp.server.fastmcp import FastMCP
 from mcp.types import PromptMessage, TextContent
 from typing import List, Dict, Any, Optional, Union
@@ -10,57 +11,59 @@ SERVER_HOST = "0.0.0.0"
 SERVER_PORT = 8080
 SERVER_PATH = "/mcp"
 
+logger = logging.getLogger(__name__)
+
 mcp = FastMCP(
     name="Case Management MCP", port=SERVER_PORT, host=SERVER_HOST, log_level="DEBUG"
 )
 
-print("Case Management FastMCP server object created.")
+logger.info("Case Management FastMCP server object created")
 
-# Base de datos en memoria para casos
+# In-memory database for cases
 CASES_DB = {}
 EVIDENCE_DB = {}
 REPORTS_DB = {}
 
-# Datos de ejemplo
+# Sample data
 SAMPLE_CASES = [
     {
         "id": "CASE-001",
-        "title": "Robo en Joyería El Diamante",
-        "type": "robo",
-        "status": "abierto",
-        "description": "Robo nocturno en joyería del centro. Entrada forzada, caja fuerte abierta.",
+        "title": "El Diamante Jewelry Store Robbery",
+        "type": "theft",
+        "status": "open",
+        "description": "Nighttime robbery at downtown jewelry store. Forced entry, safe opened.",
         "date_created": "2025-09-01",
-        "priority": "alta",
+        "priority": "high",
         "assigned_detective": "Detective García",
         "evidence_ids": ["EVID-001", "EVID-002"],
-        "suspects": ["Sospechoso desconocido - huellas dactilares"],
-        "location": "Calle Mayor 15, Centro",
+        "suspects": ["Unknown suspect - fingerprints"],
+        "location": "Mayor Street 15, Downtown",
     },
     {
         "id": "CASE-002",
-        "title": "Fraude Empresarial TechCorp",
-        "type": "fraude",
-        "status": "en_investigacion",
-        "description": "Posible malversación de fondos en empresa tecnológica.",
+        "title": "TechCorp Corporate Fraud",
+        "type": "fraud",
+        "status": "under_investigation",
+        "description": "Possible embezzlement of funds in technology company.",
         "date_created": "2025-08-28",
-        "priority": "alta",
+        "priority": "high",
         "assigned_detective": "Detective Martínez",
         "evidence_ids": ["EVID-003", "EVID-004"],
-        "suspects": ["Carlos Mendoza - CFO", "Ana López - Contadora"],
-        "location": "TechCorp Offices, Polígono Industrial",
+        "suspects": ["Carlos Mendoza - CFO", "Ana López - Accountant"],
+        "location": "TechCorp Offices, Industrial Park",
     },
     {
         "id": "CASE-003",
-        "title": "Desaparición María González",
-        "type": "desaparicion",
-        "status": "abierto",
-        "description": "Mujer de 28 años desaparecida hace 3 días. Última vez vista en centro comercial.",
+        "title": "María González Disappearance",
+        "type": "disappearance",
+        "status": "open",
+        "description": "28-year-old woman missing for 3 days. Last seen at shopping mall.",
         "date_created": "2025-09-02",
-        "priority": "crítica",
+        "priority": "critical",
         "assigned_detective": "Detective Ruiz",
         "evidence_ids": ["EVID-005"],
         "suspects": [],
-        "location": "Centro Comercial Plaza Norte",
+        "location": "Plaza Norte Shopping Mall",
     },
 ]
 
@@ -68,63 +71,63 @@ SAMPLE_EVIDENCE = [
     {
         "id": "EVID-001",
         "case_id": "CASE-001",
-        "type": "huellas_dactilares",
-        "description": "Huellas dactilares encontradas en la caja fuerte",
-        "location_found": "Caja fuerte principal",
+        "type": "fingerprints",
+        "description": "Fingerprints found on the safe",
+        "location_found": "Main safe",
         "date_collected": "2025-09-01",
-        "status": "pendiente_análisis",
-        "chain_of_custody": ["Detective García", "Laboratorio Forense"],
+        "status": "pending_analysis",
+        "chain_of_custody": ["Detective García", "Forensic Laboratory"],
         "analysis_results": None,
     },
     {
         "id": "EVID-002",
         "case_id": "CASE-001",
-        "type": "video_seguridad",
-        "description": "Grabación de cámaras de seguridad del exterior",
-        "location_found": "Cámara exterior calle Mayor",
+        "type": "security_video",
+        "description": "Recording from exterior security cameras",
+        "location_found": "Exterior camera Mayor Street",
         "date_collected": "2025-09-01",
-        "status": "analizado",
-        "chain_of_custody": ["Detective García", "Técnico IT"],
-        "analysis_results": "Figura encapuchada, aproximadamente 1.75m, entrada a las 02:30",
+        "status": "analyzed",
+        "chain_of_custody": ["Detective García", "IT Technician"],
+        "analysis_results": "Hooded figure, approximately 1.75m, entry at 02:30",
     },
     {
         "id": "EVID-003",
         "case_id": "CASE-002",
-        "type": "documentos_financieros",
-        "description": "Registros contables de los últimos 6 meses",
-        "location_found": "Oficina de contabilidad TechCorp",
+        "type": "financial_documents",
+        "description": "Accounting records from the last 6 months",
+        "location_found": "TechCorp accounting office",
         "date_collected": "2025-08-28",
-        "status": "en_análisis",
-        "chain_of_custody": ["Detective Martínez", "Auditor Forense"],
-        "analysis_results": "Discrepancias en transferencias por €250,000",
+        "status": "under_analysis",
+        "chain_of_custody": ["Detective Martínez", "Forensic Auditor"],
+        "analysis_results": "Discrepancies in transfers for €250,000",
     },
     {
         "id": "EVID-004",
         "case_id": "CASE-002",
-        "type": "registros_bancarios",
-        "description": "Extractos bancarios de cuentas corporativas",
-        "location_found": "Banco Central",
+        "type": "bank_records",
+        "description": "Bank statements from corporate accounts",
+        "location_found": "Central Bank",
         "date_collected": "2025-08-29",
-        "status": "analizado",
-        "chain_of_custody": ["Detective Martínez", "Especialista Financiero"],
-        "analysis_results": "Transferencias no autorizadas a cuentas offshore",
+        "status": "analyzed",
+        "chain_of_custody": ["Detective Martínez", "Financial Specialist"],
+        "analysis_results": "Unauthorized transfers to offshore accounts",
     },
     {
         "id": "EVID-005",
         "case_id": "CASE-003",
-        "type": "video_seguridad",
-        "description": "Última grabación de María González en centro comercial",
-        "location_found": "Centro Comercial Plaza Norte - Entrada principal",
+        "type": "security_video",
+        "description": "Last recording of María González at shopping mall",
+        "location_found": "Plaza Norte Shopping Center - Main entrance",
         "date_collected": "2025-09-02",
-        "status": "analizado",
-        "chain_of_custody": ["Detective Ruiz", "Técnico Seguridad"],
-        "analysis_results": "Última vez vista a las 18:45, saliendo sola por entrada principal",
+        "status": "analyzed",
+        "chain_of_custody": ["Detective Ruiz", "Security Technician"],
+        "analysis_results": "Last seen at 18:45, leaving alone through main entrance",
     },
 ]
 
 
 def initialize_data():
-    """Inicializa la base de datos con datos de ejemplo"""
+    """Initialize the database with sample data"""
     for case in SAMPLE_CASES:
         CASES_DB[case["id"]] = case
 
@@ -138,16 +141,16 @@ initialize_data()
 @mcp.tool()
 def get_case_details(case_id: str) -> Dict[str, Any]:
     """
-    Obtiene detalles completos de un caso específico por su ID.
+    Gets complete details of a specific case by its ID.
     """
     print(f"Tool call: get_case_details for case ID: {case_id}")
 
     if case_id not in CASES_DB:
-        return {"error": f"Caso con ID '{case_id}' no encontrado."}
+        return {"error": f"Case with ID '{case_id}' not found."}
 
     case = CASES_DB[case_id].copy()
 
-    # Agregar evidencias relacionadas
+    # Add related evidence
     case_evidence = []
     for evid_id in case.get("evidence_ids", []):
         if evid_id in EVIDENCE_DB:
@@ -160,7 +163,7 @@ def get_case_details(case_id: str) -> Dict[str, Any]:
 @mcp.tool()
 def search_cases_by_type(case_type: str) -> List[Dict[str, Any]]:
     """
-    Busca casos por tipo (robo, fraude, desaparicion, homicidio, etc.).
+    Search cases by type (theft, fraud, disappearance, homicide, etc.).
     """
     print(f"Tool call: search_cases_by_type for type: {case_type}")
 
@@ -172,14 +175,14 @@ def search_cases_by_type(case_type: str) -> List[Dict[str, Any]]:
     return (
         matching_cases
         if matching_cases
-        else {"message": f"No se encontraron casos de tipo '{case_type}'."}
+        else {"message": f"No cases found of type '{case_type}'."}
     )
 
 
 @mcp.tool()
 def search_cases_by_status(status: str) -> List[Dict[str, Any]]:
     """
-    Busca casos por estado (abierto, cerrado, en_investigacion, archivado).
+    Search cases by status (open, closed, under_investigation, archived).
     """
     print(f"Tool call: search_cases_by_status for status: {status}")
 
@@ -191,19 +194,19 @@ def search_cases_by_status(status: str) -> List[Dict[str, Any]]:
     return (
         matching_cases
         if matching_cases
-        else {"message": f"No se encontraron casos con estado '{status}'."}
+        else {"message": f"No cases found with status '{status}'."}
     )
 
 
 @mcp.tool()
 def get_evidence_details(evidence_id: str) -> Dict[str, Any]:
     """
-    Obtiene detalles de una evidencia específica por su ID.
+    Gets details of a specific evidence by its ID.
     """
     print(f"Tool call: get_evidence_details for evidence ID: {evidence_id}")
 
     if evidence_id not in EVIDENCE_DB:
-        return {"error": f"Evidencia con ID '{evidence_id}' no encontrada."}
+        return {"error": f"Evidence with ID '{evidence_id}' not found."}
 
     return EVIDENCE_DB[evidence_id]
 
@@ -211,50 +214,50 @@ def get_evidence_details(evidence_id: str) -> Dict[str, Any]:
 @mcp.tool()
 def analyze_evidence(evidence_id: str, analysis_type: str) -> Dict[str, Any]:
     """
-    Realiza análisis específico de una evidencia.
-    Tipos de análisis: forense, digital, financiero, psicológico.
+    Performs specific analysis of evidence.
+    Analysis types: forensic, digital, financial, psychological.
     """
     print(
         f"Tool call: analyze_evidence for evidence ID: {evidence_id}, analysis type: {analysis_type}"
     )
 
     if evidence_id not in EVIDENCE_DB:
-        return {"error": f"Evidencia con ID '{evidence_id}' no encontrada."}
+        return {"error": f"Evidence with ID '{evidence_id}' not found."}
 
     evidence = EVIDENCE_DB[evidence_id]
 
-    # Simular análisis basado en tipo
+    # Simulate analysis based on type
     analysis_results = {
         "evidence_id": evidence_id,
         "analysis_type": analysis_type,
         "date_analyzed": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
-        "analyst": f"Especialista en {analysis_type}",
-        "status": "completado",
+        "analyst": f"Specialist in {analysis_type}",
+        "status": "completed",
     }
 
-    if analysis_type.lower() == "forense":
-        if evidence["type"] == "huellas_dactilares":
+    if analysis_type.lower() == "forensic":
+        if evidence["type"] == "fingerprints":
             analysis_results["findings"] = (
-                "Huellas parciales identificadas, 12 puntos de comparación disponibles"
+                "Partial fingerprints identified, 12 comparison points available"
             )
             analysis_results["confidence"] = "85%"
-        elif evidence["type"] == "video_seguridad":
+        elif evidence["type"] == "security_video":
             analysis_results["findings"] = (
-                "Análisis de movimiento y características físicas completado"
+                "Movement and physical characteristics analysis completed"
             )
             analysis_results["confidence"] = "70%"
     elif analysis_type.lower() == "digital":
         analysis_results["findings"] = (
-            "Metadatos extraídos, análisis de integridad completado"
+            "Metadata extracted, integrity analysis completed"
         )
         analysis_results["confidence"] = "95%"
-    elif analysis_type.lower() == "financiero":
-        analysis_results["findings"] = "Patrones de transacción anómalos identificados"
+    elif analysis_type.lower() == "financial":
+        analysis_results["findings"] = "Anomalous transaction patterns identified"
         analysis_results["confidence"] = "90%"
 
-    # Actualizar evidencia con resultados
+    # Update evidence with results
     EVIDENCE_DB[evidence_id]["analysis_results"] = analysis_results
-    EVIDENCE_DB[evidence_id]["status"] = "analizado"
+    EVIDENCE_DB[evidence_id]["status"] = "analyzed"
 
     return analysis_results
 
@@ -264,12 +267,12 @@ def create_case_report(
     case_id: str, findings: str, recommendations: str
 ) -> Dict[str, Any]:
     """
-    Crea un informe oficial del caso con hallazgos y recomendaciones.
+    Creates an official case report with findings and recommendations.
     """
     print(f"Tool call: create_case_report for case ID: {case_id}")
 
     if case_id not in CASES_DB:
-        return {"error": f"Caso con ID '{case_id}' no encontrado."}
+        return {"error": f"Case with ID '{case_id}' not found."}
 
     report_id = f"RPT-{uuid.uuid4().hex[:8].upper()}"
     report = {
@@ -277,7 +280,7 @@ def create_case_report(
         "case_id": case_id,
         "case_title": CASES_DB[case_id]["title"],
         "date_created": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
-        "author": "Sistema de Gestión de Casos",
+        "author": "Case Management System",
         "findings": findings,
         "recommendations": recommendations,
         "status": "draft",
@@ -288,7 +291,7 @@ def create_case_report(
 
     return {
         "status": "success",
-        "message": "Informe creado exitosamente",
+        "message": "Report created successfully",
         "report": report,
     }
 
@@ -296,12 +299,12 @@ def create_case_report(
 @mcp.tool()
 def get_case_status(case_id: str) -> Dict[str, Any]:
     """
-    Verifica el estado actual de un caso.
+    Checks the current status of a case.
     """
     print(f"Tool call: get_case_status for case ID: {case_id}")
 
     if case_id not in CASES_DB:
-        return {"error": f"Caso con ID '{case_id}' no encontrado."}
+        return {"error": f"Case with ID '{case_id}' not found."}
 
     case = CASES_DB[case_id]
     return {
@@ -319,20 +322,20 @@ def get_case_status(case_id: str) -> Dict[str, Any]:
 @mcp.tool()
 def update_case_status(case_id: str, new_status: str, notes: str) -> Dict[str, Any]:
     """
-    Actualiza el estado de un caso con notas explicativas.
-    Estados válidos: abierto, en_investigacion, cerrado, archivado.
+    Updates the status of a case with explanatory notes.
+    Valid statuses: open, under_investigation, closed, archived.
     """
     print(
         f"Tool call: update_case_status for case ID: {case_id} to status: {new_status}"
     )
 
     if case_id not in CASES_DB:
-        return {"error": f"Caso con ID '{case_id}' no encontrado."}
+        return {"error": f"Case with ID '{case_id}' not found."}
 
-    valid_statuses = ["abierto", "en_investigacion", "cerrado", "archivado"]
+    valid_statuses = ["open", "under_investigation", "closed", "archived"]
     if new_status.lower() not in valid_statuses:
         return {
-            "error": f"Estado '{new_status}' no válido. Estados válidos: {', '.join(valid_statuses)}"
+            "error": f"Status '{new_status}' not valid. Valid statuses: {', '.join(valid_statuses)}"
         }
 
     old_status = CASES_DB[case_id]["status"]
@@ -341,7 +344,7 @@ def update_case_status(case_id: str, new_status: str, notes: str) -> Dict[str, A
         "%Y-%m-%d %H:%M"
     )
 
-    # Agregar nota al historial
+    # Add note to history
     if "status_history" not in CASES_DB[case_id]:
         CASES_DB[case_id]["status_history"] = []
 
@@ -356,21 +359,21 @@ def update_case_status(case_id: str, new_status: str, notes: str) -> Dict[str, A
 
     return {
         "status": "success",
-        "message": f"Estado del caso {case_id} actualizado de '{old_status}' a '{new_status.lower()}'",
+        "message": f"Case {case_id} status updated from '{old_status}' to '{new_status.lower()}'",
         "case_id": case_id,
         "new_status": new_status.lower(),
         "notes": notes,
     }
 
 
-# --- SECCIÓN PARA INICIAR EL SERVIDOR ---
+# --- SERVER STARTUP SECTION ---
 if __name__ == "__main__":
-    print(
+    logger.info(
         f"Attempting to start Case Management FastMCP server on {SERVER_HOST}:{SERVER_PORT}{SERVER_PATH} with streamable-http transport"
     )
     try:
         mcp.run(transport="streamable-http")
     except KeyboardInterrupt:
-        print("\nServer stopped by user.")
+        logger.info("Server stopped by user")
     except Exception as e:
-        print(f"An error occurred while starting the server: {e}")
+        logger.error(f"An error occurred while starting the server: {e}")
