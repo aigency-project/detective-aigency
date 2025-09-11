@@ -1,163 +1,163 @@
 # Detective Agency - Multi-Agent Investigation System
 
-Este ejemplo demuestra un sistema multi-agente para una agencia de detectives usando el framework Aigency. El sistema está compuesto por tres agentes especializados que trabajan en coordinación para resolver casos complejos.
+This example demonstrates a multi-agent system for a detective agency using the Aigency framework. The system is composed of three specialized agents that work in coordination to solve complex cases.
 
-## 🕵️ Arquitectura del Sistema
+## 🕵️ System Architecture
 
-### Agentes Especializados
+### Specialized Agents
 
-1. **`case_agent`** - Detective Especialista en Casos
-   - Analiza evidencias y desarrolla teorías del caso
-   - Crea perfiles de sospechosos
-   - Genera informes detallados de investigación
-   - Gestiona el estado de los casos
+1. **`case_agent`** - Case Specialist Detective
+   - Analyzes evidence and develops case theories
+   - Creates suspect profiles
+   - Produces detailed investigation reports
+   - Manages case status
 
-2. **`informant_agent`** - Especialista en Red de Informantes
-   - Gestiona la red de informantes
-   - Programa encuentros seguros
-   - Evalúa la credibilidad de la información
-   - Mantiene registros de confiabilidad
+2. **`informant_agent`** - Informant Network Specialist
+   - Manages the network of informants
+   - Schedules secure meetings
+   - Assesses the credibility of information
+   - Maintains reliability records
 
-3. **`detective_manager_agent`** - Detective Jefe Orquestador
-   - Coordina investigaciones complejas
-   - Delega tareas a agentes especializados
-   - Integra información de múltiples fuentes
-   - Gestiona el flujo de trabajo de investigación
+3. **`detective_manager_agent`** - Chief Detective Orchestrator
+   - Coordinates complex investigations
+   - Delegates tasks to specialized agents
+   - Integrates information from multiple sources
+   - Manages the investigation workflow
 
-### Servicios MCP (Model Context Protocol)
+### MCP Services (Model Context Protocol)
 
-- **Case Management MCP**: Gestión de casos, evidencias y reportes
-- **Informant Management MCP**: Gestión de informantes y encuentros
+- **Case Management MCP**: Management of cases, evidence, and reports
+- **Informant Management MCP**: Management of informants and meetings
 
-## 🚀 Cómo Ejecutar
+## 🚀 How to Run
 
-### Prerrequisitos
+### Prerequisites
 
-1. Docker y Docker Compose instalados
-2. Variables de entorno configuradas en `.env`:
+1. Docker and Docker Compose installed
+2. Environment variables configured in `.env`:
    ```bash
-   GIT_TOKEN=your_github_token
+   GOOGLE_GENAI_USE_VERTEXAI=FALSE
    GEMINI_API_KEY=your_gemini_api_key
    ```
 
-### Ejecución
+### Run
 
 ```bash
-# Desde el directorio detective_agency
+# From the detective-aigency directory
 docker-compose up --build
 ```
 
-### Puertos de Acceso
+### Access Ports
 
-- **Detective Manager Agent**: http://localhost:8085 (Punto de entrada principal)
+- **Detective Manager Agent**: http://localhost:8085 (Main entry point)
 - **Case Agent**: http://localhost:8082
 - **Informant Agent**: http://localhost:8084
 - **Phoenix Observability**: http://localhost:6006
 - **A2A Inspector**: http://localhost:6007
 
-## 💼 Casos de Uso
+## 💼 Use Cases
 
-### 1. Investigación Simple
-Interactúa directamente con agentes especializados:
+### 1. Simple Investigation
+Interact directly with specialized agents:
 
-**Con Case Agent:**
+**With Case Agent:**
 ```
-"Analiza el caso de robo en la joyería 'El Diamante' - evidencias: huellas dactilares, video de seguridad, testigo ocular"
-```
-
-**Con Informant Agent:**
-```
-"Busca informantes especializados en robos de joyerías en el centro de la ciudad"
+"Analyze the robbery case at the 'El Diamante' jewelry store - evidence: fingerprints, security video, eyewitness"
 ```
 
-### 2. Investigación Coordinada
-Usa el Detective Manager para casos complejos:
-
+**With Informant Agent:**
 ```
-"Investiga el caso de fraude empresarial en TechCorp - necesito análisis de evidencias financieras y contactos con informantes del sector tecnológico"
+"Find informants specialized in jewelry store robberies in the city center"
 ```
 
-El Detective Manager automáticamente:
-1. Delega el análisis de evidencias al Case Agent
-2. Coordina con el Informant Agent para obtener información adicional
-3. Integra los resultados para proporcionar una investigación completa
+### 2. Coordinated Investigation
+Use the Detective Manager for complex cases:
 
-### 3. Flujos de Trabajo Típicos
+```
+"Investigate the corporate fraud case at TechCorp - I need analysis of financial evidence and contacts with informants from the technology sector"
+```
 
-**Caso de Robo:**
-1. Case Agent analiza evidencias físicas y digitales
-2. Informant Agent contacta informantes del área
-3. Detective Manager coordina la información para identificar sospechosos
+The Detective Manager automatically:
+1. Delegates evidence analysis to the Case Agent
+2. Coordinates with the Informant Agent to obtain additional information
+3. Integrates the results to provide a complete investigation
 
-**Caso de Fraude:**
-1. Case Agent examina documentos financieros y patrones
-2. Informant Agent busca contactos en el sector financiero
-3. Detective Manager desarrolla estrategia de investigación integral
+### 3. Typical Workflows
 
-## 🔧 Configuración de Agentes
+**Robbery Case:**
+1. Case Agent analyzes physical and digital evidence
+2. Informant Agent contacts local informants
+3. Detective Manager coordinates information to identify suspects
+
+**Fraud Case:**
+1. Case Agent examines financial documents and patterns
+2. Informant Agent searches for contacts in the financial sector
+3. Detective Manager develops a comprehensive investigation strategy
+
+## 🔧 Agent Configuration
 
 ### Case Agent
-- **Especialización**: Análisis forense, desarrollo de teorías, creación de informes
-- **Herramientas MCP**: Gestión de casos, análisis de evidencias, reportes
-- **Skills**: Análisis de casos, investigación de evidencias, perfilado de sospechosos
+- **Specialization**: Forensic analysis, theory development, report creation
+- **MCP Tools**: Case management, evidence analysis, reporting
+- **Skills**: Case analysis, evidence investigation, suspect profiling
 
 ### Informant Agent
-- **Especialización**: Gestión de red de contactos, evaluación de credibilidad
-- **Herramientas MCP**: Gestión de informantes, programación de encuentros
-- **Skills**: Gestión de informantes, programación de encuentros, análisis de red
+- **Specialization**: Contact network management, credibility assessment
+- **MCP Tools**: Informant management, meeting scheduling
+- **Skills**: Informant management, meeting scheduling, network analysis
 
 ### Detective Manager Agent
-- **Especialización**: Orquestación y coordinación
-- **Capacidades**: Delegación inteligente, integración de resultados
-- **Skills**: Coordinación de investigaciones complejas, delegación especializada
+- **Specialization**: Orchestration and coordination
+- **Capabilities**: Intelligent delegation, result integration
+- **Skills**: Coordination of complex investigations, specialized delegation
 
-## 📊 Monitoreo y Observabilidad
+## 📊 Monitoring and Observability
 
-- **Phoenix**: Dashboard de observabilidad en http://localhost:6006
-- **A2A Inspector**: Herramientas de inspección de agentes en http://localhost:6007
-- **Logs**: Cada agente genera logs detallados para seguimiento
+- **Phoenix**: Observability dashboard at http://localhost:6006
+- **A2A Inspector**: Agent inspection tools at http://localhost:6007
+- **Logs**: Each agent generates detailed logs for tracing
 
-## 🔍 Ejemplos de Interacción
+## 🔍 Interaction Examples
 
-### Investigación Completa
+### Complete Investigation
 ```
-Usuario: "Tenemos un caso de desaparición - María González, 28 años, desapareció hace 3 días. Última vez vista en el centro comercial."
+User: "We have a missing person case - María González, 28 years old, has been missing for 3 days. Last seen at the shopping mall."
 
 Detective Manager:
-1. Delega al Case Agent: "Analiza el caso de desaparición de María González..."
-2. Delega al Informant Agent: "Busca informantes en el área del centro comercial..."
-3. Integra resultados y proporciona plan de investigación
+1. Delegates to Case Agent: "Analyze the missing person case of María González..."
+2. Delegates to Informant Agent: "Find informants in the shopping mall area..."
+3. Integrates results and provides an investigation plan
 ```
 
-### Análisis Especializado
+### Specialized Analysis
 ```
-Usuario: "Analiza estas huellas dactilares encontradas en la escena del crimen"
+User: "Analyze these fingerprints found at the crime scene"
 
 Case Agent:
-1. Examina las evidencias proporcionadas
-2. Compara con bases de datos
-3. Desarrolla perfil del sospechoso
-4. Genera reporte técnico
+1. Examines the provided evidence
+2. Compares with databases
+3. Develops the suspect profile
+4. Generates a technical report
 ```
 
-## 🛠️ Extensibilidad
+## 🛠️ Extensibility
 
-El sistema puede expandirse fácilmente:
+The system can be easily expanded:
 
-- **Nuevos Agentes**: Agente forense, agente de ciberseguridad, agente legal
-- **Nuevos MCPs**: Base de datos criminal, sistema de vigilancia, análisis de comunicaciones
-- **Nuevas Skills**: Análisis de ADN, investigación digital, análisis de redes sociales
+- **New Agents**: Forensic agent, cybersecurity agent, legal agent
+- **New MCPs**: Criminal database, surveillance system, communications analysis
+- **New Skills**: DNA analysis, digital investigation, social network analysis
 
-## 📝 Notas de Desarrollo
+## 📝 Development Notes
 
-- Cada agente mantiene su especialización y no realiza tareas fuera de su dominio
-- El Detective Manager actúa como orquestador sin realizar investigaciones directas
-- Los MCPs proporcionan persistencia y herramientas especializadas
-- El sistema está diseñado para ser escalable y modular
+- Each agent maintains its specialization and does not perform tasks outside its domain
+- The Detective Manager acts as an orchestrator without conducting direct investigations
+- MCPs provide persistence and specialized tools
+- The system is designed to be scalable and modular
 
-## 🔐 Consideraciones de Seguridad
+## 🔐 Security Considerations
 
-- Los informantes se manejan con códigos y nombres clave
-- La información sensible se protege en los intercambios entre agentes
-- Los encuentros se programan en ubicaciones seguras y discretas
-- Los logs no contienen información personal identificable
+- Informants are handled with codes and codenames
+- Sensitive information is protected in exchanges between agents
+- Meetings are scheduled in safe and discreet locations
+- Logs do not contain personally identifiable information
